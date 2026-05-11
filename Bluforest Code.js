@@ -326,3 +326,94 @@ function bluExport() {
     }
   }
 }
+
+//[HOLY SHIT IT'S SO FUCKING FAST] Does a batch copy-paste to save time on API calls.
+function fasterTeambuildingCleanup() {
+  //UI Alert
+  const ui = SpreadsheetApp.getUi()
+  var alert = ui.alert("Make sure you're running this on a COPY of the draft teambuilding sheet. NOWHERE ELSE!\nIf you're trying to run this anywhere else, press \"Cancel\" immediately. Otherwise, press \"OK\".", ui.ButtonSet.OK_CANCEL)
+  if (alert != ui.Button.OK) {
+    return
+  }
+  const ss = SpreadsheetApp.getActive()
+  const copySheet = ss.getSheetByName("Draft Teambuilding Tierlist")
+
+  //const sheet = ss.getSheetByName("Copy of Draft Teambuilding Tierlist")
+  const sheet = ss.getActiveSheet()
+
+  const pasteSheetId = sheet.getSheetId()
+
+  var colMax = sheet.getMaxColumns()
+  var rowMax = sheet.getMaxRows()
+
+  var bg = sheet.getRange(1,1,rowMax,colMax).getBackgrounds()
+  sheet.clearConditionalFormatRules()
+  sheet.getRange(1,1,rowMax,colMax).setBackgrounds(bg)
+
+  var topRowImages = []
+  var columnImages = []
+
+  //Record the columns that need to be value-pasted
+  for (var col = 1; col <= colMax; col++) {
+    //Top Row
+    if (sheet.getRange(2,col).getValue() == "CellImage") {
+      topRowImages.push(col) 
+    }
+
+    //Everything Else
+    if (sheet.getRange(5,col).getValue() == "CellImage") {
+      columnImages.push(col)
+      col++
+    }
+  }
+
+  var cpReqList = []
+
+  for (var i in topRowImages) {
+    cpReqList.push({
+      copyPaste: {
+        source: {
+          sheetId: pasteSheetId,
+          startRowIndex: 1,
+          endRowIndex: 2,
+          startColumnIndex: topRowImages[i]-1,
+          endColumnIndex: topRowImages[i]
+        },
+        destination: {
+          sheetId: pasteSheetId,
+          startRowIndex: 1,
+          endRowIndex: 2,
+          startColumnIndex: topRowImages[i]-1,
+          endColumnIndex: topRowImages[i]
+        },
+        pasteType: "PASTE_VALUES"
+      }
+    })
+  }
+
+  for (var i in columnImages) {
+    cpReqList.push({
+      copyPaste: {
+        source: {
+          sheetId: pasteSheetId,
+          startRowIndex: 4,
+          endRowIndex: 47,
+          startColumnIndex: columnImages[i]-1,
+          endColumnIndex: columnImages[i]
+        },
+        destination: {
+          sheetId: pasteSheetId,
+          startRowIndex: 4,
+          endRowIndex: 47,
+          startColumnIndex: columnImages[i]-1,
+          endColumnIndex: columnImages[i]
+        },
+        pasteType: "PASTE_VALUES"
+      }
+    })
+  }
+
+  Sheets.Spreadsheets.batchUpdate({requests: cpReqList}, ss.getId())
+
+  ui.alert("Done! Isn't it insane how much faster that is than the old version?")
+}

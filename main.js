@@ -61,7 +61,7 @@ function loadConstsTL() {
 
 
 function loadConstsTeam() {
-  nChars = 14;
+  nChars = 19;
 
   nameCell = 'B2';
   nameCol = 2;
@@ -306,14 +306,12 @@ function makeExport(){
 function teambuildingCleanup() {
   //UI Alert
   const ui = SpreadsheetApp.getUi()
-  var alert = ui.alert("Make sure you're running this on a COPY of the draft teambuilding sheet. NOWHERE ELSE!\nIf you're trying to run this anywhere else, press \"Cancel\" immediately. Otherwise, press \"OK\".", ui.ButtonSet.OK_CANCEL)
-  if (alert != ui.Button.OK) {
-    return
-  }
+  var alert = ui.alert("Use the faster version.", ui.ButtonSet.OK)
+  return
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getActiveSheet();
-  const original = ss.getSheetById(1208169882);
+  const original = ss.getSheetById(1872770472);
 
   var colMax = sheet.getMaxColumns();
   var rowMax = sheet.getMaxRows();
@@ -341,12 +339,16 @@ function teambuildingCleanup() {
   var endAlert = ui.alert("Teambuilding Cleanup has finished.\nYou can now export the sheet to the main tier list by selecting Copy To > Existing Spreadsheet in the sheet options menu below.", ui.ButtonSet.OK)
 }
 
-
 function onEdit(e) {
+  autofill(e)
+}
+
+function autofill(e) {
   try {
     if (!e || !e.range || (e.range.getSheet().getName() != "Draft Teambuilding Tierlist")){
       return;
     }
+
     const editRow = e.range.getRow();
     const editCol = e.range.getColumn();
     const ss = SpreadsheetApp.getActive();
@@ -361,9 +363,10 @@ function onEdit(e) {
     }
     
     if (sheet.getRange(editRow-1, editCol).getValue() != "CellImage" || sheet.getRange(editRow-1, editCol+1).getValue() != "") {
-      return; 
+      return;
     }
-    var lookupRow = datalookup.indexOf(charName);
+    
+    var lookupRow = datalookup.indexOf(charName)
     if (lookupRow === -1 || charName == "") {
       return;
     }
